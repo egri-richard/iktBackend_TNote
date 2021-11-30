@@ -147,4 +147,25 @@ return function(Slim\App $app) {
             ->withStatus(201)
             ->withHeader('Content-Type', 'application/json');
     });
+
+    $app->delete('/ttelements/{id}', function (Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                 ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ttelements = TTElements::find($args['id']);
+        if ($ttelements === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű felhasznalo']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $ttelements->delete();
+        return $response
+            ->withStatus(204);
+        });
 };
