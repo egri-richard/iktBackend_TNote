@@ -2,19 +2,24 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\RequestInterface as Request;
+
 use Project\Api\Note;
 use Project\Api\User;
-
+use Project\Api\TTElements;
 
 return function(Slim\App $app) {
-    $app->get('/users',
-        function(Request $request, Response $response) {
-            $users = User::get();
-            $kimenet = $users->toJson();
+    $app->get('/', function (Request $request, Response $response) {
+        $response->getBody()->write("Hello");
+        return $response;
+    });
 
-            $response->getBody()->write($kimenet);
-            return $response->withHeader('Content-Type', 'application/json');
-        });
+    $app->get('/users', function(Request $request, Response $response) {
+        $users = User::get();
+        $kimenet = $users->toJson();
+
+        $response->getBody()->write($kimenet);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
 
     $app->get('/users/{id}',
         function(Request $request, Response $response, array $args) {
@@ -101,7 +106,99 @@ return function(Slim\App $app) {
                 ->withStatus(200);
         });
 
-        //=============================================================
+    //ttelements
+  
+    $app->get('/ttelements', function(Request $request, Response $response) {
+        $ttelements = TTElements::get();
+        $kimenet = $ttelements->toJson();
+    
+        $response->getBody()->write($kimenet);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->get('/ttelements/{id}', function(Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ttelements = TTElements::find($args['id']);
+        if ($ttelements === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time table element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $response->getBody()->write($ttelements->toJson());
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    });
+
+    $app->post('/ttelements', function(Request $request, Response $response) {
+        $input = json_decode($request->getBody(), true);
+        $ttelements = TTElements::create($input);
+        $ttelements->save();
+
+        $kimenet = $ttelements->toJson();
+        
+        $response->getBody()->write($kimenet);
+        return $response
+            ->withStatus(201)
+            ->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->delete('/ttelements/{id}', function (Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                 ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ttelements = TTElements::find($args['id']);
+        if ($ttelements === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time table element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $ttelements->delete();
+        return $response
+            ->withStatus(204);
+    });
+
+    $app->put('/ttelements/{id}', function(Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ttelements = TTElements::find($args['id']);
+        if ($ttelements === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time table element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $input = json_decode($request->getBody(), true);
+        $ttelements->fill($input);
+        $ttelements->save();
+        $response->getBody()->write($ttelements->toJson());
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    });
+  
+    //notes
+  
     $app->get('/notes', function(Request $request, Response $response) {
         $notes = Note::get();
         $kimenet = $notes->toJson();
