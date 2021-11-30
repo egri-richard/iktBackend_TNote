@@ -7,13 +7,14 @@ use Project\Api\User;
 
 
 return function(Slim\App $app) {
-    $app->get('/users', function(Request $request, Response $response) {
-        $users = User::get();
-        $kimenet = $users->toJson();
+    $app->get('/users',
+        function(Request $request, Response $response) {
+            $users = User::get();
+            $kimenet = $users->toJson();
 
-        $response->getBody()->write($kimenet);
-        return $response->withHeader('Content-Type', 'application/json');
-    });
+            $response->getBody()->write($kimenet);
+            return $response->withHeader('Content-Type', 'application/json');
+        });
 
     $app->get('/users/{id}',
         function(Request $request, Response $response, array $args) {
@@ -38,18 +39,19 @@ return function(Slim\App $app) {
                 ->withStatus(200);
         });
 
-    $app->post('/users', function(Request $request, Response $response) {
-        $input = json_decode($request->getBody(), true);
-        $users = User::create($input);
-        $users->save();
+    $app->post('/users',
+        function(Request $request, Response $response) {
+            $input = json_decode($request->getBody(), true);
+            $users = User::create($input);
+            $users->save();
 
-        $kimenet = $users->toJson();
-        
-        $response->getBody()->write($kimenet);
-        return $response
-            ->withStatus(201) // "Created" status code
-            ->withHeader('Content-Type', 'application/json');
-    });
+            $kimenet = $users->toJson();
+            
+            $response->getBody()->write($kimenet);
+            return $response
+                ->withStatus(201) // "Created" status code
+                ->withHeader('Content-Type', 'application/json');
+        });
 
     $app->delete('/users/{id}',
         function (Request $request, Response $response, array $args) {
