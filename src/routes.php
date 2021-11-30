@@ -103,12 +103,48 @@ return function(Slim\App $app) {
                 ->withStatus(200);
         });
 
-    $app->get('/ttelements', 
-        function(Request $request, Response $response) {
-            $ttelements = TTElements::get();
-            $kimenet = $ttelements->toJson();
+
+
+    $app->get('/ttelements', function(Request $request, Response $response) {
+        $ttelements = TTElements::get();
+        $kimenet = $ttelements->toJson();
     
-            $response->getBody()->write($kimenet);
-            return $response->withHeader('Content-Type', 'application/json');
-        });
+        $response->getBody()->write($kimenet);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->get('/ttelements/{id}', function(Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ttelements = TTElements::find($args['id']);
+        if ($ttelements === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time table element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $response->getBody()->write($ttelements->toJson());
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    });
+
+    $app->post('/ttelements', function(Request $request, Response $response) {
+        $input = json_decode($request->getBody(), true);
+        $ttelements = TTElements::create($input);
+        $ttelements->save();
+
+        $kimenet = $ttelements->toJson();
+        
+        $response->getBody()->write($kimenet);
+        return $response
+            ->withStatus(201)
+            ->withHeader('Content-Type', 'application/json');
+    });
 };
