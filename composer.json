@@ -1,0 +1,21 @@
+{
+    "name": "project/api",
+    "description": "ikt api",
+    "type": "project",
+    "require": {
+        "slim/slim": "^4.9",
+        "slim/psr7": "^1.5",
+        "illuminate/database": "^8.73"
+    },
+    "autoload": {
+        "psr-4": {
+            "Project\\Api\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Erinad-2002",
+            "email": "Erinad.business@gmail.com"
+        }
+    ]
+}
