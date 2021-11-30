@@ -158,7 +158,7 @@ return function(Slim\App $app) {
         }
         $ttelements = TTElements::find($args['id']);
         if ($ttelements === null) {
-            $ki = json_encode(['error' => 'Nincs ilyen ID-jű felhasznalo']);
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time table element']);
             $response->getBody()->write($ki);
             return $response
                 ->withHeader('Content-Type', 'application/json')
@@ -167,5 +167,30 @@ return function(Slim\App $app) {
         $ttelements->delete();
         return $response
             ->withStatus(204);
-        });
+    });
+
+    $app->put('/ttelements/{id}', function(Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ttelements = TTElements::find($args['id']);
+        if ($ttelements === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time table element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $input = json_decode($request->getBody(), true);
+        $ttelements->fill($input);
+        $ttelements->save();
+        $response->getBody()->write($ttelements->toJson());
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    });
 };
