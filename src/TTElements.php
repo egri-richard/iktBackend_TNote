@@ -1,4 +1,9 @@
 <?php
 
+namespace Project\Api;
 
-return 1;
+class TTElements {
+    protected $table = 'ttelements';
+    public $timestamps = false;
+    protected $guarded = ['id'];
+}
