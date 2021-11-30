@@ -2,6 +2,8 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\RequestInterface as Request;
+
+use Project\Api\Note;
 use Project\Api\User;
 use Project\Api\TTElements;
 
@@ -30,7 +32,7 @@ return function(Slim\App $app) {
             }
             $users = User::find($args['id']);
             if ($users === null) {
-                $ki = json_encode(['error' => 'Nincs ilyen ID-jű rajzfilm']);
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű user']);
                 $response->getBody()->write($ki);
                 return $response
                     ->withHeader('Content-Type', 'application/json')
@@ -42,18 +44,19 @@ return function(Slim\App $app) {
                 ->withStatus(200);
         });
 
-    $app->post('/users', function(Request $request, Response $response) {
-        $input = json_decode($request->getBody(), true);
-        $users = User::create($input);
-        $users->save();
+    $app->post('/users',
+        function(Request $request, Response $response) {
+            $input = json_decode($request->getBody(), true);
+            $users = User::create($input);
+            $users->save();
 
-        $kimenet = $users->toJson();
-        
-        $response->getBody()->write($kimenet);
-        return $response
-            ->withStatus(201) // "Created" status code
-            ->withHeader('Content-Type', 'application/json');
-    });
+            $kimenet = $users->toJson();
+            
+            $response->getBody()->write($kimenet);
+            return $response
+                ->withStatus(201) // "Created" status code
+                ->withHeader('Content-Type', 'application/json');
+        });
 
     $app->delete('/users/{id}',
         function (Request $request, Response $response, array $args) {
@@ -66,7 +69,7 @@ return function(Slim\App $app) {
             }
             $users = User::find($args['id']);
             if ($users === null) {
-                $ki = json_encode(['error' => 'Nincs ilyen ID-jű felhasznalo']);
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű user']);
                 $response->getBody()->write($ki);
                 return $response
                     ->withHeader('Content-Type', 'application/json')
@@ -88,7 +91,7 @@ return function(Slim\App $app) {
             }
             $users = User::find($args['id']);
             if ($users === null) {
-                $ki = json_encode(['error' => 'Nincs ilyen ID-jű rajzfilm']);
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű user']);
                 $response->getBody()->write($ki);
                 return $response
                     ->withHeader('Content-Type', 'application/json')
@@ -103,8 +106,8 @@ return function(Slim\App $app) {
                 ->withStatus(200);
         });
 
-
-
+    //ttelements
+  
     $app->get('/ttelements', function(Request $request, Response $response) {
         $ttelements = TTElements::get();
         $kimenet = $ttelements->toJson();
@@ -193,4 +196,98 @@ return function(Slim\App $app) {
             ->withHeader('Content-Type', 'application/json')
             ->withStatus(200);
     });
+  
+    //notes
+  
+    $app->get('/notes', function(Request $request, Response $response) {
+        $notes = Note::get();
+        $kimenet = $notes->toJson();
+    
+        $response->getBody()->write($kimenet);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+    
+    $app->get('/notes/{id}',
+        function(Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $notes = Note::find($args['id']);
+            if ($notes === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű jegyzet']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $response->getBody()->write($notes->toJson());
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        });
+    
+    $app->post('/notes', function(Request $request, Response $response) {
+        $input = json_decode($request->getBody(), true);
+        $notes = Note::create($input);
+        $notes->save();
+    
+        $kimenet = $notes->toJson();
+            
+        $response->getBody()->write($kimenet);
+        return $response
+            ->withStatus(201) // "Created" status code
+            ->withHeader('Content-Type', 'application/json');
+        });
+    
+    $app->delete('/notes/{id}',
+        function (Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $notes = Note::find($args['id']);
+            if ($notes === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű jegyzet']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $notes->delete();
+            return $response
+                ->withStatus(204);
+        });
+    
+    $app->put('/notes/{id}',
+        function(Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $notes = Note::find($args['id']);
+            if ($notes === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű jegyzet']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $input = json_decode($request->getBody(), true);
+            $notes->fill($input);
+            $notes->save();
+            $response->getBody()->write($notes->toJson());
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        });
 };
