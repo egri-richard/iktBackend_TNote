@@ -2,9 +2,15 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\RequestInterface as Request;
-use Projekt\Api\User;
+use Project\Api\User;
+use Project\Api\TTElements;
 
 return function(Slim\App $app) {
+    $app->get('/', function (Request $request, Response $response) {
+        $response->getBody()->write("Hello");
+        return $response;
+    });
+
     $app->get('/users', function(Request $request, Response $response) {
         $users = User::get();
         $kimenet = $users->toJson();
@@ -95,5 +101,14 @@ return function(Slim\App $app) {
             return $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(200);
+        });
+
+    $app->get('/ttelements', 
+        function(Request $request, Response $response) {
+            $ttelements = TTElements::get();
+            $kimenet = $ttelements->toJson();
+    
+            $response->getBody()->write($kimenet);
+            return $response->withHeader('Content-Type', 'application/json');
         });
 };
