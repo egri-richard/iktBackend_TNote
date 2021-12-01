@@ -7,6 +7,11 @@ use Project\Api\Note;
 use Project\Api\Ownership;
 use Project\Api\User;
 use Project\Api\TTElements;
+use Project\Api\Template;
+
+return function (Slim\App $app) {
+    /* #region  users */
+
 
 return function (Slim\App $app) {
     $app->get('/', function (Request $request, Response $response) {
@@ -15,7 +20,7 @@ return function (Slim\App $app) {
     });
 
     /* #region users */
-
+  
     $app->get('/users', function (Request $request, Response $response) {
         $users = User::get();
         $kimenet = $users->toJson();
@@ -119,7 +124,112 @@ return function (Slim\App $app) {
 
     /* #endregion */
 
-    /* #region ttelements */
+    /* #region  Templates */
+
+    $app->get('/templates', function (Request $request, Response $response) {
+        $templates = Template::get();
+        $kimenet = $templates->toJson();
+
+        $response->getBody()->write($kimenet);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->get(
+        '/templates/{id}',
+        function (Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $templates = Template::find($args['id']);
+            if ($templates === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű user']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $response->getBody()->write($templates->toJson());
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        }
+    );
+
+    $app->post(
+        '/templates',
+        function (Request $request, Response $response) {
+            $input = json_decode($request->getBody(), true);
+            $templates = Template::create($input);
+            $templates->save();
+
+            $kimenet = $templates->toJson();
+
+            $response->getBody()->write($kimenet);
+            return $response
+                ->withStatus(201)
+                ->withHeader('Content-Type', 'application/json');
+        }
+    );
+
+    $app->delete(
+        '/templates/{id}',
+        function (Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $templates = Template::find($args['id']);
+            if ($templates === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű template']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $templates->delete();
+            return $response
+                ->withStatus(204);
+        }
+    );
+
+    $app->put(
+        '/templates/{id}',
+        function (Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $templates = Template::find($args['id']);
+            if ($templates === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű user']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $input = json_decode($request->getBody(), true);
+            $templates->fill($input);
+            $templates->save();
+            $response->getBody()->write($templates->toJson());
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        }
+    );
+
+    /* #endregion */
+
+    /* #region  ttelements */
 
     $app->get('/ttelements', function (Request $request, Response $response) {
         $ttelements = TTElements::get();
@@ -305,8 +415,7 @@ return function (Slim\App $app) {
 
     /* #endregion */
 
-
-    /* #region notes */
+    /* #region  notes */
 
     $app->get('/notes', function (Request $request, Response $response) {
         $notes = Note::get();
