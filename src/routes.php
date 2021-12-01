@@ -6,14 +6,17 @@ use Psr\Http\Message\RequestInterface as Request;
 use Project\Api\Note;
 use Project\Api\User;
 use Project\Api\TTElements;
+use Project\Api\Template;
 
-return function(Slim\App $app) {
+return function (Slim\App $app) {
+    /* #region  users */
+
     $app->get('/', function (Request $request, Response $response) {
         $response->getBody()->write("Hello");
         return $response;
     });
 
-    $app->get('/users', function(Request $request, Response $response) {
+    $app->get('/users', function (Request $request, Response $response) {
         $users = User::get();
         $kimenet = $users->toJson();
 
@@ -21,8 +24,9 @@ return function(Slim\App $app) {
         return $response->withHeader('Content-Type', 'application/json');
     });
 
-    $app->get('/users/{id}',
-        function(Request $request, Response $response, array $args) {
+    $app->get(
+        '/users/{id}',
+        function (Request $request, Response $response, array $args) {
             if (!is_numeric($args['id']) || $args['id'] <= 0) {
                 $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
                 $response->getBody()->write($ki);
@@ -42,23 +46,27 @@ return function(Slim\App $app) {
             return $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(200);
-        });
+        }
+    );
 
-    $app->post('/users',
-        function(Request $request, Response $response) {
+    $app->post(
+        '/users',
+        function (Request $request, Response $response) {
             $input = json_decode($request->getBody(), true);
             $users = User::create($input);
             $users->save();
 
             $kimenet = $users->toJson();
-            
+
             $response->getBody()->write($kimenet);
             return $response
                 ->withStatus(201) // "Created" status code
                 ->withHeader('Content-Type', 'application/json');
-        });
+        }
+    );
 
-    $app->delete('/users/{id}',
+    $app->delete(
+        '/users/{id}',
         function (Request $request, Response $response, array $args) {
             if (!is_numeric($args['id']) || $args['id'] <= 0) {
                 $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
@@ -78,10 +86,12 @@ return function(Slim\App $app) {
             $users->delete();
             return $response
                 ->withStatus(204);
-        });
+        }
+    );
 
-    $app->put('/users/{id}',
-        function(Request $request, Response $response, array $args) {
+    $app->put(
+        '/users/{id}',
+        function (Request $request, Response $response, array $args) {
             if (!is_numeric($args['id']) || $args['id'] <= 0) {
                 $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
                 $response->getBody()->write($ki);
@@ -104,19 +114,127 @@ return function(Slim\App $app) {
             return $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(200);
-        });
+        }
+    );
 
-    //ttelements
-  
-    $app->get('/ttelements', function(Request $request, Response $response) {
-        $ttelements = TTElements::get();
-        $kimenet = $ttelements->toJson();
-    
+    /* #endregion */
+
+    /* #region  Templates */
+
+    $app->get('/templates', function (Request $request, Response $response) {
+        $templates = Template::get();
+        $kimenet = $templates->toJson();
+
         $response->getBody()->write($kimenet);
         return $response->withHeader('Content-Type', 'application/json');
     });
 
-    $app->get('/ttelements/{id}', function(Request $request, Response $response, array $args) {
+    $app->get(
+        '/templates/{id}',
+        function (Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $templates = Template::find($args['id']);
+            if ($templates === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű user']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $response->getBody()->write($templates->toJson());
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        }
+    );
+
+    $app->post(
+        '/templates',
+        function (Request $request, Response $response) {
+            $input = json_decode($request->getBody(), true);
+            $templates = Template::create($input);
+            $templates->save();
+
+            $kimenet = $templates->toJson();
+
+            $response->getBody()->write($kimenet);
+            return $response
+                ->withStatus(201)
+                ->withHeader('Content-Type', 'application/json');
+        }
+    );
+
+    $app->delete(
+        '/templates/{id}',
+        function (Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $templates = Template::find($args['id']);
+            if ($templates === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű template']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $templates->delete();
+            return $response
+                ->withStatus(204);
+        }
+    );
+
+    $app->put(
+        '/templates/{id}',
+        function (Request $request, Response $response, array $args) {
+            if (!is_numeric($args['id']) || $args['id'] <= 0) {
+                $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(400);
+            }
+            $templates = Template::find($args['id']);
+            if ($templates === null) {
+                $ki = json_encode(['error' => 'Nincs ilyen ID-jű user']);
+                $response->getBody()->write($ki);
+                return $response
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withStatus(404);
+            }
+            $input = json_decode($request->getBody(), true);
+            $templates->fill($input);
+            $templates->save();
+            $response->getBody()->write($templates->toJson());
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(200);
+        }
+    );
+
+    /* #endregion */
+
+    /* #region  ttelements */
+
+    $app->get('/ttelements', function (Request $request, Response $response) {
+        $ttelements = TTElements::get();
+        $kimenet = $ttelements->toJson();
+
+        $response->getBody()->write($kimenet);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->get('/ttelements/{id}', function (Request $request, Response $response, array $args) {
         if (!is_numeric($args['id']) || $args['id'] <= 0) {
             $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
             $response->getBody()->write($ki);
@@ -138,13 +256,13 @@ return function(Slim\App $app) {
             ->withStatus(200);
     });
 
-    $app->post('/ttelements', function(Request $request, Response $response) {
+    $app->post('/ttelements', function (Request $request, Response $response) {
         $input = json_decode($request->getBody(), true);
         $ttelements = TTElements::create($input);
         $ttelements->save();
 
         $kimenet = $ttelements->toJson();
-        
+
         $response->getBody()->write($kimenet);
         return $response
             ->withStatus(201)
@@ -156,7 +274,7 @@ return function(Slim\App $app) {
             $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
             $response->getBody()->write($ki);
             return $response
-                 ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Content-Type', 'application/json')
                 ->withStatus(400);
         }
         $ttelements = TTElements::find($args['id']);
@@ -172,7 +290,7 @@ return function(Slim\App $app) {
             ->withStatus(204);
     });
 
-    $app->put('/ttelements/{id}', function(Request $request, Response $response, array $args) {
+    $app->put('/ttelements/{id}', function (Request $request, Response $response, array $args) {
         if (!is_numeric($args['id']) || $args['id'] <= 0) {
             $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
             $response->getBody()->write($ki);
@@ -196,19 +314,22 @@ return function(Slim\App $app) {
             ->withHeader('Content-Type', 'application/json')
             ->withStatus(200);
     });
-  
-    //notes
-  
-    $app->get('/notes', function(Request $request, Response $response) {
+
+    /* #endregion */
+
+    /* #region  notes */
+
+    $app->get('/notes', function (Request $request, Response $response) {
         $notes = Note::get();
         $kimenet = $notes->toJson();
-    
+
         $response->getBody()->write($kimenet);
         return $response->withHeader('Content-Type', 'application/json');
     });
-    
-    $app->get('/notes/{id}',
-        function(Request $request, Response $response, array $args) {
+
+    $app->get(
+        '/notes/{id}',
+        function (Request $request, Response $response, array $args) {
             if (!is_numeric($args['id']) || $args['id'] <= 0) {
                 $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
                 $response->getBody()->write($ki);
@@ -228,22 +349,24 @@ return function(Slim\App $app) {
             return $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(200);
-        });
-    
-    $app->post('/notes', function(Request $request, Response $response) {
+        }
+    );
+
+    $app->post('/notes', function (Request $request, Response $response) {
         $input = json_decode($request->getBody(), true);
         $notes = Note::create($input);
         $notes->save();
-    
+
         $kimenet = $notes->toJson();
-            
+
         $response->getBody()->write($kimenet);
         return $response
             ->withStatus(201) // "Created" status code
             ->withHeader('Content-Type', 'application/json');
-        });
-    
-    $app->delete('/notes/{id}',
+    });
+
+    $app->delete(
+        '/notes/{id}',
         function (Request $request, Response $response, array $args) {
             if (!is_numeric($args['id']) || $args['id'] <= 0) {
                 $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
@@ -263,10 +386,12 @@ return function(Slim\App $app) {
             $notes->delete();
             return $response
                 ->withStatus(204);
-        });
-    
-    $app->put('/notes/{id}',
-        function(Request $request, Response $response, array $args) {
+        }
+    );
+
+    $app->put(
+        '/notes/{id}',
+        function (Request $request, Response $response, array $args) {
             if (!is_numeric($args['id']) || $args['id'] <= 0) {
                 $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
                 $response->getBody()->write($ki);
@@ -289,5 +414,8 @@ return function(Slim\App $app) {
             return $response
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(200);
-        });
+        }
+    );
+
+    /* #endregion */
 };
