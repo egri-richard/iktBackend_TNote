@@ -3,8 +3,7 @@
     "require": {
         "slim/slim": "^4.9",
         "slim/psr7": "^1.5",
-        "illuminate/database": "^8.73",
-        "doctrine/dbal": "^3.2"
+        "illuminate/database": "^8.74"
     },
     "autoload": {
         "psr-4": {
