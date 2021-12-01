@@ -4,6 +4,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\RequestInterface as Request;
 
 use Project\Api\Note;
+use Project\Api\Ownership;
 use Project\Api\User;
 use Project\Api\TTElements;
 use Project\Api\Template;
@@ -11,11 +12,15 @@ use Project\Api\Template;
 return function (Slim\App $app) {
     /* #region  users */
 
+
+return function (Slim\App $app) {
     $app->get('/', function (Request $request, Response $response) {
         $response->getBody()->write("Hello");
         return $response;
     });
 
+    /* #region users */
+  
     $app->get('/users', function (Request $request, Response $response) {
         $users = User::get();
         $kimenet = $users->toJson();
@@ -310,6 +315,99 @@ return function (Slim\App $app) {
         $ttelements->fill($input);
         $ttelements->save();
         $response->getBody()->write($ttelements->toJson());
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    });
+
+    /* #endregion */
+
+    /* #region  ownership */
+
+    $app->get('/ownership', function (Request $request, Response $response) {
+        $ownership = Ownership::get();
+        $kimenet = $ownership->toJson();
+
+        $response->getBody()->write($kimenet);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->get('/ownership/{id}', function (Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ownership = Ownership::find($args['id']);
+        if ($ownership === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time ownership element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $response->getBody()->write($ownership->toJson());
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    });
+
+    $app->post('/ownership', function (Request $request, Response $response) {
+        $input = json_decode($request->getBody(), true);
+        $ownership = Ownership::create($input);
+        $ownership->save();
+
+        $kimenet = $ownership->toJson();
+
+        $response->getBody()->write($kimenet);
+        return $response
+            ->withStatus(201)
+            ->withHeader('Content-Type', 'application/json');
+    });
+
+    $app->delete('/ownership/{id}', function (Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ownership = Ownership::find($args['id']);
+        if ($ownership === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time ownership element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $ownership->delete();
+        return $response
+            ->withStatus(204);
+    });
+
+    $app->put('/ownership/{id}', function (Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $ownership = Ownership::find($args['id']);
+        if ($ownership === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time ownership element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $input = json_decode($request->getBody(), true);
+        $ownership->fill($input);
+        $ownership->save();
+        $response->getBody()->write($ownership->toJson());
         return $response
             ->withHeader('Content-Type', 'application/json')
             ->withStatus(200);
