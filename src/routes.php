@@ -10,10 +10,6 @@ use Project\Api\TTElements;
 use Project\Api\Template;
 
 return function (Slim\App $app) {
-    /* #region  users */
-
-
-return function (Slim\App $app) {
     $app->get('/', function (Request $request, Response $response) {
         $response->getBody()->write("Hello");
         return $response;
