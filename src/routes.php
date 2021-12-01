@@ -8,6 +8,7 @@ use Project\Api\Ownership;
 use Project\Api\User;
 use Project\Api\TTElements;
 use Project\Api\Template;
+use Illuminate\Support\Facades\DB;
 
 return function (Slim\App $app) {
     $app->get('/', function (Request $request, Response $response) {
@@ -350,6 +351,28 @@ return function (Slim\App $app) {
             ->withStatus(200);
     });
 
+    $app->get('/ownership/getnoteid/{id}', function (Request $request, Response $response, array $args) {
+        if (!is_numeric($args['id']) || $args['id'] <= 0) {
+            $ki = json_encode(['error' => 'Az ID pozitív egész szám kell legyen!']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+        $noteid = DB::table('ownership')->where('userid', $args['id'])->value('noteid');
+        if ($noteid === null) {
+            $ki = json_encode(['error' => 'Nincs ilyen ID-jű time note element']);
+            $response->getBody()->write($ki);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(404);
+        }
+        $response->getBody()->write($noteid->toJson());
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    });
+
     $app->post('/ownership', function (Request $request, Response $response) {
         $input = json_decode($request->getBody(), true);
         $ownership = Ownership::create($input);
@@ -512,4 +535,7 @@ return function (Slim\App $app) {
     );
 
     /* #endregion */
+
+
+
 };
